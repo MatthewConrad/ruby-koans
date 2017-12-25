@@ -31,22 +31,19 @@ require File.expand_path(File.dirname(__FILE__) + '/neo')
 
 def score(dice)
   # You need to write this method
+  if dice.size > 5
+      raise ArgumentError, "Cannot roll more than five dice."
+  end
+
   sum = 0
-  dice.each do |item|
-    if dice.count(item) == 3
-      if item == 1
-        sum += 1000
-      else
-        sum += item*100
-      end
+  dice.uniq.each do |item|
+    count = dice.count(item)
+    if item == 1
+      sum += ((count / 3) * 1000) + ((count % 3) * 100)
+    elsif item == 5
+      sum += ((count / 3) * 100 * item) + ((count % 3) * 50)
     else
-      if item == 5
-        sum += 50
-      elsif item == 1
-        sum += 100
-      else
-        sum += 0
-      end
+      sum += (count / 3) * 100 * item
     end
   end
   return sum
@@ -55,6 +52,13 @@ end
 class AboutScoringProject < Neo::Koan
   def test_score_of_an_empty_list_is_zero
     assert_equal 0, score([])
+  end
+
+  def test_expception_for_more_than_five_dice
+    exception = assert_raise(ArgumentError) do
+      score([1,1,1,1,1,1])
+    end
+    assert_match(/more than five/, exception.message)
   end
 
   def test_score_of_a_single_roll_of_5_is_50
